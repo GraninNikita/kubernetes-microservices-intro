@@ -1,0 +1,117 @@
+# PostgreSQL StatefulSet for Resources Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: resources-db
+  namespace: k8s-program
+spec:
+  selector:
+    app: resources-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: resources-db
+  namespace: k8s-program
+spec:
+  serviceName: resources-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resources-db
+  template:
+    metadata:
+      labels:
+        app: resources-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 1Gi
+---
+# PostgreSQL StatefulSet for Songs Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: songs-db
+  namespace: k8s-program
+spec:
+  selector:
+    app: songs-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: songs-db
+  namespace: k8s-program
+spec:
+  serviceName: songs-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: songs-db
+  template:
+    metadata:
+      labels:
+        app: songs-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 1Gi

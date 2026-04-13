@@ -1,0 +1,125 @@
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: k8s-program
+  labels:
+    name: k8s-program
+---
+
+# Shared env variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-env
+  namespace: k8s-program
+data:
+  ENABLE_EUREKA_CLIENT: "true"
+  EUREKA_URI: localhost
+--- 
+
+# Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: resources-service
+  namespace: k8s-program
+spec:
+  selector:
+    app: resources-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: songs-service
+  namespace: k8s-program
+spec:
+  selector:
+    app: songs-service
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: NodePort
+---
+
+#Deployments
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resources-service-deployment
+  namespace: k8s-program
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resources-service
+  template:
+    metadata:
+      labels:
+        app: resources-service
+    spec:
+      containers:
+        - name: resources-service
+          image: localhost/resources-service:latest
+          imagePullPolicy: Never
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "1"
+            limits:
+              memory: "512Mi"
+              cpu: "2"
+          envFrom:
+            - configMapRef:
+                name: shared-env
+          env:
+            - name: RESOURCES_MS_PORT
+              value: "8080"
+            - name: RESOURCES_DB_URL
+              value: resources-db
+            - name: RESOURCES_DB_PORT
+              value: "5432"
+            - name: SONGS_MS_URL
+              value: songs-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: songs-service-deployment
+  namespace: k8s-program
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: songs-service
+  template:
+    metadata:
+      labels:
+        app: songs-service
+    spec:
+      containers:
+        - name: songs-service
+          image: localhost/songs-service:latest
+          imagePullPolicy: Never
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "1"
+            limits:
+              memory: "512Mi"
+              cpu: "2"
+          env:
+            - name: SONGS_MS_NAME
+              value: songs-ms
+            - name: SONGS_MS_PORT
+              value: "8081"
+            - name: SONGS_DB_URL
+              value: songs-db
+            - name: SONGS_DB_PORT
+              value: "5432"

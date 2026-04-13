@@ -1,9 +1,13 @@
-# Smaller OS footprint using JRE
-FROM openjdk:21
+# Build stage
+FROM gradle:8-jdk21 AS build
 WORKDIR /app
+COPY . .
+RUN gradle :resources-service:build -x test --no-daemon
 
-# Copy only the Jar from the current dir
-ADD build/libs/*.jar /app/app.jar
+# Runtime stage
+FROM amazoncorretto:21
+WORKDIR /app
+COPY --from=build /app/resources-service/build/libs/*.jar /app/app.jar
 
 CMD ["java", "-jar", "app.jar"]
 
