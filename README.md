@@ -16,6 +16,36 @@ Microservices Intro program, pre-requisite for Kubernetes educational program: h
   `podman build -t resources-service:latest -f resources-service/Dockerfile .`
   `podman build -t songs-service:latest -f songs-service/Dockerfile .`
 2. Load images into minikube
+  ```bash
+     podman save localhost/resources-service:latest | (eval $(minikube podman-env) && podman load)
+     podman save localhost/songs-service:latest | (eval $(minikube podman-env) && podman load)
+  ```
+  
+3. Deploy with k8s
+   `kubectl apply -f deployment.yml`
+
+# Task 1 Demo
+1. Sub-task 2
+  1. Show created namespace
+    `kubectl get services -n k8s-program`
+  2. 
+2. 
+
+# Kubernetes and podman commands
+
+## Prerequisites
+
+- `minikube start`
+
+### Sub-task 3
+
+- Show created namespaces:
+`kubectl get namespace`
+
+1. Build services images
+  `podman build -t resources-service:latest -f resources-service/Dockerfile .`
+  `podman build -t songs-service:latest -f songs-service/Dockerfile .`
+2. Load images into minikube
   ```podman save localhost/resources-service:latest | (eval $(minikube podman-env) && podman load)
      podman save localhost/songs-service:latest | (eval $(minikube podman-env) && podman load)```.  
 3. Deploy with k8s
